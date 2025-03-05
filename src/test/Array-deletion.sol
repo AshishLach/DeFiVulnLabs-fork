@@ -32,19 +32,15 @@ contract ContractTest is Test {
     }
 
     function testArrayDeletion() public {
-        ArrayDeletionBugContract.myArray(1);
-        //delete incorrectly
+        assertEq(ArrayDeletionBugContract.getLength(), 5);
         ArrayDeletionBugContract.deleteElement(1);
-        ArrayDeletionBugContract.myArray(1);
-        ArrayDeletionBugContract.getLength();
+        assertEq(ArrayDeletionBugContract.getLength(), 5);
     }
 
-    function testFixedArrayDeletion() public {
-        FixedArrayDeletionContract.myArray(1);
-        //delete incorrectly
+    function testArrayDeletionFixed() public {
+        assertEq(FixedArrayDeletionContract.getLength(), 5);
         FixedArrayDeletionContract.deleteElement(1);
-        FixedArrayDeletionContract.myArray(1);
-        FixedArrayDeletionContract.getLength();
+        assertEq(FixedArrayDeletionContract.getLength(), 4);
     }
 
     receive() external payable {}

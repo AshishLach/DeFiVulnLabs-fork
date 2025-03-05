@@ -16,38 +16,23 @@ https://www.infuy.com/blog/bypass-contract-size-limitations-in-solidity-risks-an
 
 contract ContractTest is Test {
     Target TargetContract;
-    FailedAttack FailedAttackContract;
     Attack AttackerContract;
     TargetRemediated TargetRemediatedContract;
 
     constructor() {
         TargetContract = new Target();
-        FailedAttackContract = new FailedAttack();
         TargetRemediatedContract = new TargetRemediated();
     }
 
-    function testBypassFailedContractCheck() public {
-        console.log(
-            "Before exploiting, protected status of TargetContract:",
-            TargetContract.pwned()
-        );
-        console.log("Exploit Failed");
-        FailedAttackContract.pwn(address(TargetContract));
-    }
-
-    function testBypassContractCheck() public {
-        console.log(
-            "Before exploiting, protected status of TargetContract:",
-            TargetContract.pwned()
-        );
+    function testTargetAttackBug() public {
         AttackerContract = new Attack(address(TargetContract));
-        console.log(
-            "After exploiting, protected status of TargetContract:",
-            TargetContract.pwned()
-        );
-        console.log("Exploit completed");
+        assertEq(TargetContract.pwned(), true);
     }
 
+    function testTargetAttackBugFixed() public {
+        vm.expectRevert();
+        AttackerContract = new Attack(address(TargetRemediatedContract));
+    }
     receive() external payable {}
 }
 
@@ -68,16 +53,6 @@ contract Target {
     function protected() external {
         require(!isContract(msg.sender), "no contract allowed");
         pwned = true;
-    }
-}
-
-contract FailedAttack is Test {
-    // Attempting to call Target.protected will fail,
-    // Target block calls from contract
-    function pwn(address _target) external {
-        // This will fail
-        vm.expectRevert("no contract allowed");
-        Target(_target).protected();
     }
 }
 

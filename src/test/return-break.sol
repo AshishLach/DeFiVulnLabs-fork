@@ -48,6 +48,7 @@ contract ContractTest is Test {
 
         BankContractBugContract.addBanks(bankAddresses, bankNames);
         BankContractBugContract.getBankCount();
+        console.log(BankContractBugContract.getBankCount());
     }
 
     function testBreak() public {
@@ -67,6 +68,7 @@ contract ContractTest is Test {
         bankNames[2] = "Global Bank";
 
         FixedBankContract.addBanks(bankAddresses, bankNames);
+        console.log(FixedBankContract.getBankCount());
         FixedBankContract.getBankCount();
     }
 

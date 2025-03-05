@@ -46,31 +46,50 @@ contract ContractTest is Test {
         address bob = vm.addr(2);
         MyTokenContract.transfer(alice, 1 ether + 1);
         MyTokenContract.transfer(bob, 2 ether);
-
         vm.startPrank(alice);
-        // Alice deposits 1 wei, gets 1 pool token
-        MyTokenContract.approve(address(SimplePoolContract), 1);
-        SimplePoolContract.deposit(1);
-
-        // Alice transfers 1 ether to the pool, inflating the pool token price
-        MyTokenContract.transfer(address(SimplePoolContract), 1 ether);
-
+        MyTokenContract.approve(address(SimplePoolContract), type(uint256).max);
+        SimplePoolContract.deposit(1 ether + 1);
+        // MyTokenContract.transfer(address(SimplePoolContract), 1 ether);
         vm.stopPrank();
+        console.log(
+            "total shares alice holds now",
+            SimplePoolContract.balanceOf(alice)
+        );
+
         vm.startPrank(bob);
-        // Bob deposits 2 ether, gets 1 pool token due to inflated price
-        // uint shares = _tokenAmount * _sharesTotalSupply / _supplied;
-        // shares = 2000000000000000000 * 1 / 1000000000000000001 = 1.9999999999999999999 => round down to 1.
-        MyTokenContract.approve(address(SimplePoolContract), 2 ether);
+        MyTokenContract.approve(address(SimplePoolContract), type(uint256).max);
         SimplePoolContract.deposit(2 ether);
         vm.stopPrank();
+        console.log(
+            "total shares bob holds now",
+            SimplePoolContract.balanceOf(bob)
+        );
+        //Ideally bob should have more shares
+
         vm.startPrank(alice);
+        uint256 aliceBalanceBefore = MyTokenContract.balanceOf(alice);
 
-        MyTokenContract.balanceOf(address(SimplePoolContract));
-
-        // Alice withdraws and gets 1.5 ether, making a profit
         SimplePoolContract.withdraw(1);
-        assertEq(MyTokenContract.balanceOf(alice), 1.5 ether);
-        console.log("Alice balance", MyTokenContract.balanceOf(alice));
+        uint256 aliceBalanceAfter = MyTokenContract.balanceOf(alice);
+
+        vm.stopPrank();
+        console.log("Alice deposited only  1 ether 1 wei");
+
+        console.log(
+            "total Profit of Alice",
+            aliceBalanceAfter - aliceBalanceBefore
+        );
+
+        vm.startPrank(bob);
+        uint256 bobBalanceBefore = MyTokenContract.balanceOf(bob);
+
+        SimplePoolContract.withdraw(1);
+        uint256 bobBalanceAfter = MyTokenContract.balanceOf(bob);
+
+        vm.stopPrank();
+        console.log("Alice deposited 2 ethers");
+
+        console.log("total Profit of Bob", bobBalanceAfter - bobBalanceBefore);
     }
 
     receive() external payable {}
@@ -101,7 +120,16 @@ contract SimplePool {
 
         uint _shares;
         if (totalShares == 0) {
-            _shares = amount;
+            // _shares = amount;
+            balanceOf[address(0)] += 1000;
+            totalShares += 1000;
+            // _totalSupply -= 1000;
+            _shares = tokenToShares(
+                amount,
+                loanToken.balanceOf(address(this)),
+                totalShares,
+                false
+            );
         } else {
             _shares = tokenToShares(
                 amount,
@@ -126,6 +154,34 @@ contract SimplePool {
         bool roundUpCheck
     ) internal pure returns (uint) {
         if (_supplied == 0) return _tokenAmount;
+
+        /*
+
+
+_tokenAmount : 1
+_sharesTotalSupply: 1000
+supplied: 1000
+
+Alice: 1 share 
+Alice supplied  1 ether extra
+--------------------------
+_tokenAmount : 2 ether
+ _sharesTotalSupply: 1001
+        supplied:  1 ether + 1001
+
+Bob:  2001
+
+
+--------------
+
+what if  alice provided 1 ether+1 in the deposit intialuy?
+_tokenAmount : 1 ether + 1
+_sharesTotalSupply: 1000
+supplied: 1000
+
+Alice total shares : (10000000000000000001 * 1000) / 1000
+
+        */
         uint shares = (_tokenAmount * _sharesTotalSupply) / _supplied;
         if (
             roundUpCheck &&

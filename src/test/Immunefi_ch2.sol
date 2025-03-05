@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/StorageSlot.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "forge-std/console.sol";
 
 //#SpotTheBugChallenge
 //https://twitter.com/immunefi/status/1562858386244665348?s=21&t=d7_HtNra5AGuNmzVtv9uKg
@@ -16,18 +17,23 @@ interface imp {
 contract ContractTest is Test {
     Proxy ProxyContract;
     Implementation ImplementationContract;
-
     function testChallenge() public {
         ImplementationContract = new Implementation();
         console.log(
             "ImplementationContract addr",
             address(ImplementationContract)
         );
+
         ProxyContract = new Proxy(address(ImplementationContract));
+        console.log("owner address is ", address(this));
+        console.log("Proxy address is ", address(ProxyContract));
 
         emit log_named_bytes32(
             "Storage slot 0:",
             vm.load(address(ProxyContract), bytes32(uint256(0)))
+        );
+        console.log(
+            "owner address from ownable contract is replaced in proxy contract! "
         );
     }
 }
@@ -62,8 +68,9 @@ contract Proxy {
 }
 
 contract Implementation is Ownable, Initializable {
-    // function initialize(address owner) external {    //test purpose
-    function initialize(address owner) external initializer {
+    function initialize(address owner) external {
+        //test purpose
+        // function initialize(address owner) external initializer {
         _transferOwnership(owner);
     }
 }

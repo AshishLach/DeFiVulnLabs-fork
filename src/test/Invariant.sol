@@ -28,7 +28,6 @@ https://ethereum-blockchain-developer.com/027-exceptions/04-invariants-with-asse
 
 */
 
-
 contract ContractTest is Test {
     Invariant InvariantContract;
 
@@ -42,7 +41,7 @@ contract ContractTest is Test {
 
         InvariantContract.receiveMoney{value: 18 ether}();
         console.log(
-            "testInvariant, BalanceReceived:",
+            "Total balance should be 19 ether but currently it is: :",
             InvariantContract.balanceReceived(address(this))
         );
         /*

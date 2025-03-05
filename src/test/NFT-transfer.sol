@@ -40,11 +40,13 @@ contract ContractTest is Test {
     }
 
     function testVulnerableERC721() public {
-        VulnerableERC721Contract.ownerOf(1);
-        vm.prank(bob);
-        VulnerableERC721Contract.transferFrom(address(alice), address(bob), 1);
-
         console.log(VulnerableERC721Contract.ownerOf(1));
+        vm.prank(bob);
+        VulnerableERC721Contract.transferFrom(alice, bob, 1);
+        console.log(VulnerableERC721Contract.ownerOf(1));
+        console.log(
+            "now bob is owner of NFT eventhough alice didnt approve this"
+        );
     }
 
     function testFixedERC721() public {

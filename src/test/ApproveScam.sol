@@ -18,38 +18,26 @@ Users should only approve the amount of tokens necessary for the operation at ha
 */
 
 contract ContractTest is Test {
-    ERC20 ERC20Contract;
+    ERC20 token;
     address alice = vm.addr(1);
     address eve = vm.addr(2);
 
     function testApproveScam() public {
-        ERC20Contract = new ERC20();
-        ERC20Contract.mint(1000);
-        ERC20Contract.transfer(address(alice), 1000);
+        token = new ERC20();
+        token.mint(100000);
+        token.transfer(alice, 100000);
 
         vm.prank(alice);
-        // Be Careful to grant unlimited amount to unknown website/address.
-        // Do not perform approve, if you are sure it's from a legitimate website.
-        // Alice granted approval permission to Eve.
-        ERC20Contract.approve(address(eve), type(uint256).max);
+        //Alice wanted to intereact with dapp or unknown website thinking they will take only 10 tokens.
+        //But Alice didnt see approval transaction complete details and approve the entire amount to dapp or to some unknown websites
+        token.approve(eve, 100000);
 
-        console.log(
-            "Before exploiting, Balance of Eve:",
-            ERC20Contract.balanceOf(eve)
-        );
-        console.log(
-            "Due to Alice granted transfer permission to Eve, now Eve can move funds from Alice"
-        );
         vm.prank(eve);
-        // Now, Eve can move funds from Alice.
-        ERC20Contract.transferFrom(address(alice), address(eve), 1000);
-        console.log(
-            "After exploiting, Balance of Eve:",
-            ERC20Contract.balanceOf(eve)
-        );
-        console.log("Exploit completed");
-    }
+        token.transferFrom(alice, eve, 100000);
 
+        //completely drain eve token balane
+        assertEq(token.balanceOf(alice), 0);
+    }
     receive() external payable {}
 }
 

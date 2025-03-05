@@ -45,6 +45,10 @@ contract ContractTest is Test {
             "Current initialized boolean:",
             ILogic(address(ProxyContract)).getinitialized()
         );
+        console.log(
+            "before111 initializing, changed guardianAddress to attacker:",
+            ILogic(address(ProxyContract)).getguardianAddress()
+        );
         console.log("Try to call initialize to change guardianAddress");
         ILogic(address(ProxyContract)).initialize(address(msg.sender));
 
@@ -90,6 +94,7 @@ contract TestProxy is TransparentUpgradeableProxy {
             )
         )
     {
+        console.log("111 proxy admin is", _admin);
         proxyAdmin = _admin;
     }
 }
@@ -113,18 +118,21 @@ contract Initializable {
             initializing || isConstructor() || !initialized,
             "Contract instance has already been initialized"
         );
-
         bool isTopLevelCall = !initializing;
+        console.log("1", isTopLevelCall);
+
         if (isTopLevelCall) {
             initializing = true;
             initialized = true;
         }
+        console.log("2", isTopLevelCall);
 
         _;
 
         if (isTopLevelCall) {
             initializing = false;
         }
+        console.log("3", isTopLevelCall);
     }
 
     /// @dev Returns true if and only if the function is running in the constructor

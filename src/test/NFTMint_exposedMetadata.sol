@@ -18,7 +18,6 @@ REF:
 https://twitter.com/Supremacy_CA/status/1596176732729769985
 https://medium.com/@Supremacy_Official/evilreveal-cve-2022-38217-a-nuclear-weapon-level-generic-vulnerability-buried-under-the-nft-5112724dabb
 */
- 
 
 contract ContractTest is DSTest {
     IFantasticWeslie nftContract =

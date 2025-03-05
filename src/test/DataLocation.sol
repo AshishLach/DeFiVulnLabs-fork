@@ -26,22 +26,14 @@ contract ContractTest is Test {
     Array ArrayContract;
 
     function testDataLocation() public {
-        address alice = vm.addr(1);
-        address bob = vm.addr(2);
-        vm.deal(address(alice), 1 ether);
-        vm.deal(address(bob), 1 ether);
-        //vm.startPrank(alice);
         ArrayContract = new Array();
-        ArrayContract.updaterewardDebt(100); // update rewardDebt to 100
-        (uint amount, uint rewardDebt) = ArrayContract.userInfo(address(this));
-        console.log("Non-updated rewardDebt", rewardDebt);
+        ArrayContract.updaterewardDebt(1000);
 
-        console.log("Update rewardDebt with storage");
-        ArrayContract.fixedupdaterewardDebt(100);
-        (uint newamount, uint newrewardDebt) = ArrayContract.userInfo(
+        (uint256 amount, uint256 rewardDebt) = ArrayContract.userInfo(
             address(this)
         );
-        console.log("Updated rewardDebt", newrewardDebt);
+        //Still it will be zero even through 1000 was set
+        assertEq(amount, 0);
     }
 
     receive() external payable {}

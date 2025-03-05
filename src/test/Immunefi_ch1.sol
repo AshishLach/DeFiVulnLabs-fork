@@ -14,12 +14,9 @@ contract ContractTest is Test {
 
     function testSafeMint() public {
         HerTokenContract = new HerToken();
-
         HerTokenContract.safeMint{value: 1 ether}(address(this), 10);
-        console.log(
-            "Due to incorrect check msg.value, we can mint many NFTs with 1 Eth."
-        );
-        console.log("NFT minted:", HerTokenContract.balanceOf(address(this)));
+        console.log("total minted", HerTokenContract.balanceOf(address(this)));
+        console.log("we got 10 nfts for the price of 1 nft");
     }
 
     function onERC721Received(

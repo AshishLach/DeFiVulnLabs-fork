@@ -34,10 +34,9 @@ contract ContractTest is Test {
         );
         ProxyContract.testcollision();
         console.log(
-            "overwritten slot0 implementation contract address:",
+            "new implementation contract address:",
             ProxyContract.implementation()
         );
-        console.log("Exploit completed");
     }
 
     receive() external payable {}

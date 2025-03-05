@@ -26,23 +26,24 @@ Looks like theres is no setwinner function in contract, how admin can rug?
 */
 
 contract ContractTest is Test {
-    LotteryGame LotteryGameContract;
+    LotteryGame game;
 
     function testBackdoorCall() public {
         address alice = vm.addr(1);
         address bob = vm.addr(2);
-        LotteryGameContract = new LotteryGame();
-        console.log(
-            "Alice performs pickWinner, of course she will not be a winner"
-        );
-        vm.prank(alice);
-        LotteryGameContract.pickWinner(address(alice));
-        console.log("Prize: ", LotteryGameContract.prize());
 
-        console.log("Now, admin sets the winner to drain out the prize.");
-        LotteryGameContract.pickWinner(address(bob));
-        console.log("Admin manipulated winner: ", LotteryGameContract.winner());
-        console.log("Exploit completed");
+        game = new LotteryGame();
+        vm.prank(alice);
+        game.pickWinner(alice);
+        console.log(
+            "winner not set even when pickWinner is successful with alice address: ",
+            game.winner()
+        );
+
+        //Admin is calling now - rug pull style which is very common and hidden in the code
+        game.pickWinner(bob);
+
+        console.log("Admin manipulated winner is bob: ", game.winner());
     }
 
     receive() external payable {}

